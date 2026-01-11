@@ -142,19 +142,47 @@ class WatcherService:
                 coin_name = u.get("name")
                 if coin_name and i < len(contexts):
                     ctx = contexts[i]
+                    if not isinstance(ctx, dict):
+                        continue
+                    
+                    # Extract funding safely
+                    funding_value = 0.0
+                    funding_field = ctx.get("funding")
+                    if isinstance(funding_field, dict):
+                        funding_value = float(funding_field.get("funding", 0))
+                    elif isinstance(funding_field, (int, float)):
+                        funding_value = float(funding_field)
+                    elif isinstance(funding_field, str):
+                        try:
+                            funding_value = float(funding_field)
+                        except (ValueError, TypeError):
+                            funding_value = 0.0
+                    
+                    # Helper to extract float from dict, handling strings
+                    def _to_float(d: dict, key: str, default: float = 0.0) -> float:
+                        val = d.get(key, default)
+                        if isinstance(val, (int, float)):
+                            return float(val)
+                        elif isinstance(val, str):
+                            try:
+                                return float(val)
+                            except (ValueError, TypeError):
+                                return default
+                        return default
+                    
                     coins_with_data.append({
                         "coin": coin_name,
-                        "dayNtlVlm": ctx.get("dayNtlVlm", 0),
+                        "dayNtlVlm": _to_float(ctx, "dayNtlVlm", 0),
                         "data": {
-                            "maxLeverage": u.get("maxLeverage", 0),
+                            "maxLeverage": _to_float(u, "maxLeverage", 0),
                             "onlyIsolated": u.get("onlyIsolated", False),
                             "marginMode": u.get("marginMode"),
-                            "funding": ctx.get("funding", {}).get("funding", 0),
-                            "markPx": ctx.get("markPx", 0),
-                            "midPx": ctx.get("midPx", 0),
-                            "oraclePx": ctx.get("oraclePx", 0),
-                            "openInterest": ctx.get("openInterest", 0),
-                            "dayNtlVlm": ctx.get("dayNtlVlm", 0),
+                            "funding": funding_value,
+                            "markPx": _to_float(ctx, "markPx", 0),
+                            "midPx": _to_float(ctx, "midPx", 0),
+                            "oraclePx": _to_float(ctx, "oraclePx", 0),
+                            "openInterest": _to_float(ctx, "openInterest", 0),
+                            "dayNtlVlm": _to_float(ctx, "dayNtlVlm", 0),
                         }
                     })
             
@@ -279,25 +307,53 @@ class WatcherService:
                         time.sleep(state.config.poll_interval_sec)
                         continue
                 
+                # Helper to extract float from dict, handling strings
+                def _to_float(d: dict, key: str, default: float = 0.0) -> float:
+                    val = d.get(key, default)
+                    if isinstance(val, (int, float)):
+                        return float(val)
+                    elif isinstance(val, str):
+                        try:
+                            return float(val)
+                        except (ValueError, TypeError):
+                            return default
+                    return default
+                
                 # Get top N coins by volume
                 coins_with_data = []
                 for i, u in enumerate(cached_universe):
                     coin_name = u.get("name")
                     if coin_name and i < len(cached_contexts):
                         ctx = cached_contexts[i]
+                        if not isinstance(ctx, dict):
+                            continue
+                        
+                        # Extract funding safely
+                        funding_value = 0.0
+                        funding_field = ctx.get("funding")
+                        if isinstance(funding_field, dict):
+                            funding_value = float(funding_field.get("funding", 0))
+                        elif isinstance(funding_field, (int, float)):
+                            funding_value = float(funding_field)
+                        elif isinstance(funding_field, str):
+                            try:
+                                funding_value = float(funding_field)
+                            except (ValueError, TypeError):
+                                funding_value = 0.0
+                        
                         coins_with_data.append({
                             "coin": coin_name,
-                            "dayNtlVlm": ctx.get("dayNtlVlm", 0),
+                            "dayNtlVlm": _to_float(ctx, "dayNtlVlm", 0),
                             "data": {
-                                "maxLeverage": u.get("maxLeverage", 0),
+                                "maxLeverage": _to_float(u, "maxLeverage", 0),
                                 "onlyIsolated": u.get("onlyIsolated", False),
                                 "marginMode": u.get("marginMode"),
-                                "funding": ctx.get("funding", {}).get("funding", 0),
-                                "markPx": ctx.get("markPx", 0),
-                                "midPx": ctx.get("midPx", 0),
-                                "oraclePx": ctx.get("oraclePx", 0),
-                                "openInterest": ctx.get("openInterest", 0),
-                                "dayNtlVlm": ctx.get("dayNtlVlm", 0),
+                                "funding": funding_value,
+                                "markPx": _to_float(ctx, "markPx", 0),
+                                "midPx": _to_float(ctx, "midPx", 0),
+                                "oraclePx": _to_float(ctx, "oraclePx", 0),
+                                "openInterest": _to_float(ctx, "openInterest", 0),
+                                "dayNtlVlm": _to_float(ctx, "dayNtlVlm", 0),
                             }
                         })
                 
