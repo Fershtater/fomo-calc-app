@@ -1,0 +1,29 @@
+version: "3.8"
+
+services:
+  farmcalc-api:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - LOG_FORMAT=${LOG_FORMAT:-json}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}
+      - FARM_STATE_PATH=/app/data/farm_state.json
+      - WATCH_STATE_PATH=/app/data/watch_state.json
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import requests; requests.get('http://localhost:8000/health')",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
